@@ -1,18 +1,9 @@
 import streamlit as st
 
-
 # Function to calculate the required final exam score
 def calculate_final_exam_score(current_score, desired_score, final_weight):
     """
     Calculate the score needed on the final exam to achieve the desired overall grade.
-
-    Parameters:
-    current_score (float): The current overall score in the class (as a percentage).
-    desired_score (float): The desired overall score in the class (as a percentage).
-    final_weight (float): The weight of the final exam (as a percentage of the total grade).
-
-    Returns:
-    float: The score needed on the final exam (as a percentage).
     """
     # Convert weights to proportions
     final_weight /= 100
@@ -29,20 +20,22 @@ st.title('Final Exam Score Calculator')
 # Tabbed interface for input methods
 tab1, tab2 = st.tabs(["Use Sliders", "Type Values"])
 
-# Variables to store inputs
-current_score, desired_score, final_weight = None, None, None
+# Default values
+current_score = 92.5
+desired_score = 90.0
+final_weight = 40.0
 
 with tab1:  # Slider input method
     st.write("Use sliders to set the values:")
-    current_score = st.slider('Current Overall Score (%)', 0.0, 100.0, 92.5, 0.01)
-    desired_score = st.slider('Desired Overall Score (%)', 0.0, 100.0, 90.0, 0.01)
-    final_weight = st.slider('Final Exam Weight (%)', 0.0, 100.0, 40.0, 0.5)
+    current_score = st.slider('Current Overall Score (%)', 0.0, 100.0, current_score, 0.01)
+    desired_score = st.slider('Desired Overall Score (%)', 0.0, 100.0, desired_score, 0.01)
+    final_weight = st.slider('Final Exam Weight (%)', 0.0, 100.0, final_weight, 0.5)
 
 with tab2:  # Text input method
     st.write("Type the values directly:")
-    current_score_input = st.text_input("Enter Current Overall Score (%)", "92.5")
-    desired_score_input = st.text_input("Enter Desired Overall Score (%)", "90.0")
-    final_weight_input = st.text_input("Enter Final Exam Weight (%)", "40.0")
+    current_score_input = st.text_input("Enter Current Overall Score (%)", str(current_score))
+    desired_score_input = st.text_input("Enter Desired Overall Score (%)", str(desired_score))
+    final_weight_input = st.text_input("Enter Final Exam Weight (%)", str(final_weight))
 
     # Convert and validate inputs
     try:
