@@ -1,4 +1,5 @@
 import streamlit as st
+from datetime import datetime
 
 # Function to calculate the required final exam score
 def calculate_final_exam_score(current_score, desired_score, final_weight):
@@ -24,12 +25,29 @@ def love_calculator(name1, name2):
     love_score = total % 101
     return love_score
 
+# Function to check if the current date is Valentine's Day or Qixi Festival
+def is_special_day():
+    today = datetime.now()
+    # Valentine's Day: February 14
+    if today.month == 2 and today.day == 14:
+        return True
+    # Qixi Festival (approximation): August 7
+    if today.month == 8 and today.day == 7:
+        return True
+    return False
+
 # Streamlit app layout
 st.set_page_config(page_title="Multi-Feature App", page_icon="💡")
 
 # Sidebar navigation
 st.sidebar.title("Navigation")
-page = st.sidebar.radio("Select a feature:", ["Final Exam Score Calculator", "Love Calculator"])
+
+# Determine available pages
+available_pages = ["Final Exam Score Calculator"]
+if is_special_day():
+    available_pages.append("Love Calculator")
+
+page = st.sidebar.radio("Select a feature:", available_pages)
 
 if page == "Final Exam Score Calculator":
     # Final Exam Score Calculator Page
@@ -39,9 +57,9 @@ if page == "Final Exam Score Calculator":
     tab1, tab2 = st.tabs(["Use Sliders", "Type Values"])
 
     # Default values
-    current_score = 90.0
-    desired_score = 92.5
-    final_weight = 20.0
+    current_score = 92.5
+    desired_score = 90.0
+    final_weight = 40.0
 
     with tab1:  # Slider input method
         st.write("Use sliders to set the values:")
