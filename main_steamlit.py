@@ -13,52 +13,86 @@ def calculate_final_exam_score(current_score, desired_score, final_weight):
 
     return needed_score
 
+# Function for love calculator
+def love_calculator(name1, name2):
+    """Calculate a compatibility score based on two names."""
+    combined_names = name1 + name2
+    total = 0
+    for char in combined_names.upper():
+        if char.isalpha():
+            total += ord(char) - ord('A') + 1
+    love_score = total % 101
+    return love_score
 
 # Streamlit app layout
-st.title('Final Exam Score Calculator')
+st.set_page_config(page_title="Multi-Feature App", page_icon="💡")
 
-# Tabbed interface for input methods
-tab1, tab2 = st.tabs(["Use Sliders", "Type Values"])
+# Sidebar navigation
+st.sidebar.title("Navigation")
+page = st.sidebar.radio("Select a feature:", ["Final Exam Score Calculator", "Love Calculator"])
 
-# Default values
-current_score = 92.5
-desired_score = 90.0
-final_weight = 40.0
+if page == "Final Exam Score Calculator":
+    # Final Exam Score Calculator Page
+    st.title('Final Exam Score Calculator')
 
-with tab1:  # Slider input method
-    st.write("Use sliders to set the values:")
-    current_score = st.slider('Current Overall Score (%)', 0.0, 100.0, current_score, 0.01)
-    desired_score = st.slider('Desired Overall Score (%)', 0.0, 100.0, desired_score, 0.01)
-    final_weight = st.slider('Final Exam Weight (%)', 0.0, 100.0, final_weight, 0.5)
+    # Tabbed interface for input methods
+    tab1, tab2 = st.tabs(["Use Sliders", "Type Values"])
 
-with tab2:  # Text input method
-    st.write("Type the values directly:")
-    current_score_input = st.text_input("Enter Current Overall Score (%)", str(current_score))
-    desired_score_input = st.text_input("Enter Desired Overall Score (%)", str(desired_score))
-    final_weight_input = st.text_input("Enter Final Exam Weight (%)", str(final_weight))
+    # Default values
+    current_score = 90.0
+    desired_score = 92.5
+    final_weight = 20.0
 
-    # Convert and validate inputs
-    try:
-        current_score = float(current_score_input)
-        desired_score = float(desired_score_input)
-        final_weight = float(final_weight_input)
-    except ValueError:
-        st.error("Please enter valid numeric values.")
+    with tab1:  # Slider input method
+        st.write("Use sliders to set the values:")
+        current_score = st.slider('Current Overall Score (%)', 0.0, 100.0, current_score, 0.01)
+        desired_score = st.slider('Desired Overall Score (%)', 0.0, 100.0, desired_score, 0.01)
+        final_weight = st.slider('Final Exam Weight (%)', 0.0, 100.0, final_weight, 0.5)
 
-# Compute the required score when button is pressed
-if st.button('Calculate Required Final Score'):
-    if current_score is not None and desired_score is not None and final_weight is not None:
-        if 0 <= current_score <= 100 and 0 <= desired_score <= 100 and 0 <= final_weight <= 100:
-            needed_score = calculate_final_exam_score(current_score, desired_score, final_weight)
+    with tab2:  # Text input method
+        st.write("Type the values directly:")
+        current_score_input = st.text_input("Enter Current Overall Score (%)", str(current_score))
+        desired_score_input = st.text_input("Enter Desired Overall Score (%)", str(desired_score))
+        final_weight_input = st.text_input("Enter Final Exam Weight (%)", str(final_weight))
 
-            if 0 <= needed_score <= 100:
-                st.write(
-                    f"You need to score **{needed_score:.2f}%** on the final exam to achieve your desired overall score.")
-            elif needed_score < 0:
-                st.write("Congratulations! You have already achieved your desired score.")
+        # Convert and validate inputs
+        try:
+            current_score = float(current_score_input)
+            desired_score = float(desired_score_input)
+            final_weight = float(final_weight_input)
+        except ValueError:
+            st.error("Please enter valid numeric values.")
+
+    # Compute the required score when button is pressed
+    if st.button('Calculate Required Final Score'):
+        if current_score is not None and desired_score is not None and final_weight is not None:
+            if 0 <= current_score <= 100 and 0 <= desired_score <= 100 and 0 <= final_weight <= 100:
+                needed_score = calculate_final_exam_score(current_score, desired_score, final_weight)
+
+                if 0 <= needed_score <= 100:
+                    st.write(
+                        f"You need to score **{needed_score:.2f}%** on the final exam to achieve your desired overall score.")
+                elif needed_score < 0:
+                    st.write("Congratulations! You have already achieved your desired score.")
+                else:
+                    st.write("It is not possible to achieve your desired score with the given final exam weight.")
             else:
-                st.write("It is not possible to achieve your desired score with the given final exam weight.")
+                st.error("Please ensure all inputs are between 0 and 100.")
         else:
-            st.error("Please ensure all inputs are between 0 and 100.")
-    else:
-        st.error("Missing or invalid inputs. Please check your values.")
+            st.error("Missing or invalid inputs. Please check your values.")
+
+elif page == "Love Calculator":
+    # Love Calculator Page
+    st.title('Love Calculator')
+
+    # Input fields for names
+    name1 = st.text_input("Enter the first name:", "Alice")
+    name2 = st.text_input("Enter the second name:", "Bob")
+
+    # Calculate compatibility score
+    if st.button('Calculate Love Score'):
+        if name1 and name2:
+            score = love_calculator(name1, name2)
+            st.write(f"The love score between **{name1}** and **{name2}** is: **{score}%**")
+        else:
+            st.error("Please enter both names.")
