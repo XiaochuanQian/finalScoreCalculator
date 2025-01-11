@@ -1,8 +1,8 @@
 import streamlit as st
 
-# -----------------------------------------
-# 1. Letter-grade -> numeric mappings
-# -----------------------------------------
+# =========================================
+# 1. GPA Scales
+# =========================================
 regular_scale = {
     "A": 4.0, "A-": 3.7,
     "B+": 3.3, "B": 3.0, "B-": 2.7,
@@ -25,11 +25,8 @@ advance_scale = {
 }
 
 
-# -----------------------------------------
-# 2. A function to convert a letter grade
-#    and difficulty -> numeric GPA points
-# -----------------------------------------
 def letter_to_points(letter_grade: str, difficulty: str) -> float:
+    """Convert letter grade (A,B+,etc.) + difficulty into numeric points."""
     lg = letter_grade.upper().strip()
     diff = difficulty.lower().strip()
 
@@ -43,17 +40,11 @@ def letter_to_points(letter_grade: str, difficulty: str) -> float:
         return regular_scale.get(lg, 0.0)
 
 
-# -----------------------------------------
-# 3. Convert numeric score (0–100) -> letter grade
-#    You can adjust these thresholds as needed.
-# -----------------------------------------
+# =========================================
+# 2. Convert a numeric score (0–100) to a letter grade with decimal cutoffs
+# =========================================
 def score_to_letter(score: float) -> str:
-    """
-    Convert a numeric score (0–100) to a letter grade,
-    using decimal thresholds per your requirement.
-    E.g., >=92.5 => A, >=88.5 => A-, etc.
-    """
-
+    # Example decimal breakpoints
     if score >= 92.5:
         return "A"
     elif score >= 88.5:
@@ -78,155 +69,155 @@ def score_to_letter(score: float) -> str:
         return "F"
 
 
-# -----------------------------------------
-# 4. Course lists
-#    - All are required except for ONE elective
-# -----------------------------------------
+# =========================================
+# 3. Weighted average for Chinese (3-part)
+# =========================================
+def get_chinese_points():
+    st.write("Enter decimal scores (0–100) for each part:")
+    c_score = st.number_input("Chinese (60%) score", min_value=0.0, max_value=100.0, step=0.01, value=90.0)
+    p_score = st.number_input("Native Politics (20%) score", min_value=0.0, max_value=100.0, step=0.01, value=90.0)
+    g_score = st.number_input("National Geography (20%) score", min_value=0.0, max_value=100.0, step=0.01, value=90.0)
+
+    # Weighted average
+    final_score = 0.6 * c_score + 0.2 * p_score + 0.2 * g_score
+    # Convert to letter
+    letter_grade = score_to_letter(final_score)
+    st.write(f"**Weighted Score** = {final_score:.2f} → **Letter** = {letter_grade}")
+
+    # Then convert letter -> numeric points (regular scale)
+    points = letter_to_points(letter_grade, "regular")
+    st.write(f"Chinese Culture => {points:.2f} points on 4.0 scale (Regular)")
+    return points
+
+
+# =========================================
+# 4. Grade 10 and Grade 11 Curricula
+# =========================================
+
+# G10 required (except the “Elective” is optional)
 G10_BASE = [
     ("Chinese Culture 10", "regular", 0.5),
-    ("HAG (History&Geog)", "honor", 1.0),
-    ("English 10", "honor", 1.0),
-    ("Chemistry", "honor", 1.0),
-    ("Physics1", "advance", 1.0),
-    ("Pre-calculus", "advance", 1.0),
-    ("PE", "regular", 0.5),
-    ("PBL Core", "advance", 0.5),
-    ("PBL AI", "advance", 0.5),
+    ("History and Geography", "honor", 1.0),
+    ("Honor English/English 10", "honor", 1.0),
+    ("Honor Chemistry", "honor", 1.0),
+    ("Honor Physics/AP Physics 1", "advance", 1.0),
+    ("Algebra 2/AP Pre-calculus", "advance", 1.0),
+    ("PE and Health 10", "regular", 0.5),
+    ("PBL Core/AP Seminar", "advance", 0.5),
+    ("PBL Track", "advance", 0.5),
 ]
 G10_ELECTIVE = ("Elective (Optional)", "advance", 1.0)
 
+# G11 required
+# We remove "Honor Biology" so we can let the user pick it below
 G11_BASE = [
-    ("Chinese 11", "regular", 0.5),
-    ("World History", "advance", 1.0),
-    ("Honor English", "honor", 0.5),
-    ("AP English", "advance", 0.5),
-    ("Biology", "advance", 1.0),
-    ("Chemistry", "advance", 1.0),
-    ("Statistics", "advance", 1.0),
-    ("PE", "regular", 0.5),
-    ("PBL IR", "advance", 0.5),
-    ("PBL AI", "advance", 0.5),
+    ("Chinese Culture 11", "regular", 0.5),
+    ("AP World History", "advance", 1.0),
+    # We'll insert an English option (Honor or AP) and a Biology option (Honor or AP)
+    ("AP Science Elective", "advance", 1.0),
+    ("AP Math Elective", "advance", 1.0),
+    ("PE and Health 11", "regular", 0.5),
+    ("PBL Research/AP Research", "advance", 0.5),
+    ("PBL Track", "advance", 0.5),
 ]
 G11_ELECTIVE = ("Elective (Optional)", "advance", 1.0)
 
 
-# -----------------------------------------
+# =========================================
 # 5. GPA Calculation
-# -----------------------------------------
-def calculate_gpa(courses):
-    """
-    courses is a list of dicts, each with:
-        name, difficulty, credits,
-        actual_points (the GPA points),
-    We'll do sum(actual_points * credits) / sum(credits)
-    """
-    total_quality_points = 0.0
-    total_credits = 0.0
-
-    for c in courses:
-        total_quality_points += c["actual_points"] * c["credits"]
-        total_credits += c["credits"]
-
-    if total_credits == 0:
+# =========================================
+def compute_gpa(courses_taken):
+    total_qp = 0.0
+    total_cr = 0.0
+    for c in courses_taken:
+        total_qp += c["actual_points"] * c["credits"]
+        total_cr += c["credits"]
+    if total_cr == 0:
         return 0.0, 0.0
-    gpa = total_quality_points / total_credits
-    return gpa, total_credits
+    return (total_qp / total_cr), total_cr
 
 
-# -----------------------------------------
+# =========================================
 # 6. Streamlit App
-# -----------------------------------------
+# =========================================
 def main():
-    st.title("Revised GPA Calculator")
+    st.title("High School GPA Calculator (With Biology Options)")
 
     st.write("""
     **Instructions**:
-    1. Choose Grade 10 or 11.
-    2. Decide whether you take the optional Elective or not.
-    3. For Chinese, **input numeric scores** (0–100).
-       The app will convert that weighted average into a letter grade automatically.
-    4. For other courses, pick a letter grade from the dropdown.
-    5. A final credit-weighted GPA is displayed.
+    1. Select Grade 10 or 11.
+    2. Decide if you want the optional Elective.
+    3. For G11, pick your English course (Honor or AP) **and** your Biology course (Honor or AP).
+    4. For Chinese Culture, input your decimal scores.
+    5. For other courses, choose letter grades.
+    6. Final GPA is credit-weighted.
     """)
 
-    # Grade selection
-    year_choice = st.radio("Select your grade:", ["Grade 10", "Grade 11"])
+    grade = st.radio("Which grade are you calculating?", ["Grade 10", "Grade 11"])
 
-    if year_choice == "Grade 10":
-        course_base = list(G10_BASE)
-        elective_course = G10_ELECTIVE
+    if grade == "Grade 10":
+        base_courses = list(G10_BASE)
+        elective = G10_ELECTIVE
     else:
-        course_base = list(G11_BASE)
-        elective_course = G11_ELECTIVE
+        base_courses = list(G11_BASE)
+        elective = G11_ELECTIVE
 
-    # Option to add elective or not
-    add_elective = st.checkbox("Add Elective?", value=False)
-    if add_elective:
-        course_base.append(elective_course)
+        # -- G11 English Option --
+        eng_choice = st.radio("English Course (G11):", ["Honor English", "AP English"])
+        if eng_choice == "Honor English":
+            base_courses.insert(2, ("Honor English (G11)", "honor", 1.0))
+        else:
+            base_courses.insert(2, ("AP English (G11)", "advance", 1.0))
 
-    # We'll build a data structure
-    # to store actual_points for each course
-    computed_courses = []
+        # -- G11 Biology Option --
+        bio_choice = st.radio("Biology Course (G11):", ["Honor Biology", "AP Biology"])
+        if bio_choice == "Honor Biology":
+            base_courses.insert(3, ("Honor Biology (G11)", "honor", 1.0))
+        else:
+            base_courses.insert(3, ("AP Biology (G11)", "advance", 1.0))
 
-    # Go through each course
-    for (cname, cdiff, ccredits) in course_base:
+    # Optional Elective
+    take_elective = st.checkbox("Add the Elective?", value=False)
+    if take_elective:
+        base_courses.append(elective)
+
+    # Gather user input for each course
+    results = []
+    for (cname, cdiff, ccredits) in base_courses:
         st.markdown("---")
-        st.subheader(f"{cname} - {cdiff} - {ccredits} credits")
-
-        if "Chinese" in cname:
-            # Instead of selecting a letter grade,
-            # user inputs numeric score for sub-parts
-            st.write("**Please enter your numeric scores (0–100) for each sub-part**:")
-            c_score = st.number_input("Chinese (60%) score:", min_value=0, max_value=100, value=90, step=1,
-                                      key=f"{cname}_CH")
-            p_score = st.number_input("Politics (20%) score:", min_value=0, max_value=100, value=90, step=1,
-                                      key=f"{cname}_PO")
-            g_score = st.number_input("Geography (20%) score:", min_value=0, max_value=100, value=90, step=1,
-                                      key=f"{cname}_GE")
-
-            # Weighted average
-            final_score = 0.6 * c_score + 0.2 * p_score + 0.2 * g_score
-            # Convert numeric (0–100) -> letter
-            c_letter = score_to_letter(final_score)
-            st.write(f"Calculated weighted score: **{final_score:.1f}** → Letter grade: **{c_letter}**")
-
-            # Now convert letter to GPA points (regular scale)
-            actual_points = letter_to_points(c_letter, "regular")
-            st.write(f"GPA Points (Regular scale): **{actual_points:.2f}**")
-
-            computed_courses.append({
+        st.subheader(f"{cname} ({cdiff}, {ccredits} credits)")
+        if "Chinese Culture" in cname:
+            # Use the custom subgrades approach
+            c_points = get_chinese_points()
+            results.append({
                 "name": cname,
                 "difficulty": cdiff,
                 "credits": ccredits,
-                "actual_points": actual_points
+                "actual_points": c_points
             })
         else:
-            # For other courses, pick letter from dropdown
+            # Let user pick a letter grade
             letter_choice = st.selectbox(
                 f"Letter Grade for {cname}",
                 options=list(regular_scale.keys()),
-                key=cname  # unique key
+                key=cname
             )
-            # Convert letter -> numeric
-            actual_points = letter_to_points(letter_choice, cdiff)
-            st.write(f"GPA Points: **{actual_points:.2f}**")
-
-            computed_courses.append({
+            numeric = letter_to_points(letter_choice, cdiff)
+            st.write(f"GPA Points: {numeric:.2f}")
+            results.append({
                 "name": cname,
                 "difficulty": cdiff,
                 "credits": ccredits,
-                "actual_points": actual_points
+                "actual_points": numeric
             })
 
-    # Calculate final GPA
-    gpa, total_credits = calculate_gpa(computed_courses)
-
+    # Compute GPA
     st.markdown("---")
-    st.header("Final Results")
-    if total_credits == 0:
-        st.warning("No valid credits. Cannot compute GPA.")
+    gpa, t_credits = compute_gpa(results)
+    if t_credits == 0:
+        st.warning("No valid credits, can't compute GPA.")
     else:
-        st.success(f"**Weighted GPA**: {gpa:.2f}  (Total Credits: {total_credits})")
+        st.success(f"**Your Weighted GPA** = {gpa:.2f} (Total Credits: {t_credits})")
 
 
 if __name__ == "__main__":
