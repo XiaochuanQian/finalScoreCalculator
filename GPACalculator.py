@@ -74,11 +74,12 @@ def score_to_letter(score: float) -> str:
 # =========================================
 def get_chinese_points():
     st.write("Enter decimal scores (0–100) for each part:")
-    c_score = st.number_input("Chinese (75%) score", min_value=0.0, max_value=100.0, step=0.01, value=90.0)
-    p_score = st.number_input("Native Politics or National Geography(25%) score", min_value=0.0, max_value=100.0, step=0.01, value=90.0)
+    c_score = st.number_input("Chinese (60%) score", min_value=0.0, max_value=100.0, step=0.01, value=90.0)
+    p_score = st.number_input("Native Politics (20%) score", min_value=0.0, max_value=100.0, step=0.01, value=90.0)
+    g_score = st.number_input("National Geography (20%) score", min_value=0.0, max_value=100.0, step=0.01, value=90.0)
 
     # Weighted average
-    final_score = 0.75 * c_score + 0.25 * p_score
+    final_score = 0.6 * c_score + 0.2 * p_score + 0.2 * g_score
     # Convert to letter
     letter_grade = score_to_letter(final_score)
     st.write(f"**Weighted Score** = {final_score:.2f} → **Letter** = {letter_grade}")
