@@ -110,6 +110,20 @@ def get_chinese_points():
     st.write(f"Chinese Culture => {points:.2f} points on 4.0 scale (Regular)")
     return points
 
+def get_chinese_points_g11():
+    st.write("Enter decimal scores (0–100) for each part:")
+    c_score = st.number_input("Chinese (75%) score", min_value=0.0, max_value=100.0, step=0.01, value=90.0)
+    gp_score = st.number_input("Geo/Politics (25%) score", min_value=0.0, max_value=100.0, step=0.01, value=90.0)
+
+    final_score = 0.75 * c_score + 0.25 * gp_score
+    letter_grade = score_to_letter(final_score)
+    st.write(f"**Weighted Score** = {final_score:.2f} → **Letter** = {letter_grade}")
+
+    points = letter_to_points(letter_grade, "regular")
+    st.write(f"Chinese Culture (G11) => {points:.2f} points on 4.0 scale (Regular)")
+    return points
+
+
 # Course data for GPA Calculator
 G10_BASE = [
     ("Chinese Culture 10", "regular", 0.5),
@@ -191,8 +205,16 @@ def run_gpa_calculator():
     for (cname, cdiff, ccredits) in base_courses:
         st.markdown("---")
         st.subheader(f"{cname} ({cdiff}, {ccredits} credits)")
-        if "Chinese Culture" in cname:
+        if "Chinese Culture 10" in cname:
             c_points = get_chinese_points()
+            results.append({
+                "name": cname,
+                "difficulty": cdiff,
+                "credits": ccredits,
+                "actual_points": c_points
+            })
+        elif "Chinese Culture 11" in cname:
+            c_points = get_chinese_points_g11()  # 使用新的 G11 计算函数
             results.append({
                 "name": cname,
                 "difficulty": cdiff,
@@ -219,7 +241,8 @@ def run_gpa_calculator():
     if t_credits == 0:
         st.warning("No valid credits, can't compute GPA.")
     else:
-        st.success(f"**Your Weighted GPA** = {gpa:.2f} (Total Credits: {t_credits})")
+        st.success(f"**Your Weighted GPA** = {gpa:.3f} (Total Credits: {t_credits})")
+
 
 # ---------------------------- Streamlit App Layout ----------------------------
 
